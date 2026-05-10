@@ -228,7 +228,7 @@ if "👤 Hunter" in persona:
                             temp_context = rerank_chunks(condensed_query, chunks, reranker, status_steps=status_data["steps"])
                             
                             # CRITICAL: The Strict Evaluator Gate (CRAG Step)
-                            if grade_context_relevance(condensed_query, temp_context, status_steps=status_data["steps"]):
+                            if grade_context_relevance(condensed_query, temp_context, active_api_key, status_steps=status_data["steps"]):
                                 final_context = temp_context
                                 status_box.update(label="✅ Found relevant Documentation", state="complete")
                                 status_data["label"] = "✅ Found relevant Documentation"
@@ -248,7 +248,7 @@ if "👤 Hunter" in persona:
                             status_box.update(label="🕵️ Agentic Regex Search...")
                             regex_chunks = agentic_regex_search(condensed_query, llm, status_steps=status_data["steps"])
                                 
-                            if regex_chunks and grade_context_relevance(condensed_query, regex_chunks, status_steps=status_data["steps"]):
+                            if regex_chunks and grade_context_relevance(condensed_query, regex_chunks, active_api_key, status_steps=status_data["steps"]):
                                 final_context = regex_chunks
                                 cache_status = "unverified"
                                 status_box.update(label="⚠️ Found in knowledge base", state="complete")
