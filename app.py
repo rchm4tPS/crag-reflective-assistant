@@ -50,11 +50,11 @@ def load_models(api_key):
     _llm = ChatGoogleGenerativeAI(
         model=LLM_MODEL, 
         temperature=LLM_TEMP,
-        google_api_key=api_key
+        api_key=api_key
     )
     _embeddings = GoogleGenerativeAIEmbeddings(
         model=EMBEDDING_MODEL,
-        google_api_key=api_key
+        api_key=api_key
     )
     return _llm, _embeddings
 
