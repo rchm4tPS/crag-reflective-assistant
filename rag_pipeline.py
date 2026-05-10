@@ -330,7 +330,7 @@ def agentic_regex_search(query, llm, search_dir=DATA_DIR, status_steps=None):
         
     return matches[:3] 
 
-def grade_context_relevance(query, chunks, status_steps=None):
+def grade_context_relevance(query, chunks, api_key, status_steps=None):
     """
     Corrective RAG (CRAG) mechanism.
     Evaluates if the retrieved chunks actually answer the user's query.
@@ -355,7 +355,7 @@ def grade_context_relevance(query, chunks, status_steps=None):
     SINGLE-WORD RESPONSE:
     """)
     
-    eval_llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.0)
+    eval_llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.0, api_key=api_key)
     response = eval_llm.invoke(prompt.format(query=query, context=context_text))
 
     if isinstance(response.content, list):
