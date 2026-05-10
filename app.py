@@ -22,32 +22,59 @@ st.markdown("""
 
 st.title("👨‍💻 Reflective Mentoring Assistant")
 
+@st.dialog("🔒 API Authentication Required", dismissible=False)
+def prompt_for_api_key():
+    st.write("Welcome! Please enter your **Google Gemini API Key** to start the Assistant. You can get one from Google AI Studio.")
+    api_key = st.text_input("🔑 API Key", type="password")
+    if st.button("Submit"):
+        if not api_key:
+            st.error("API Key cannot be empty.")
+        elif not api_key.startswith("AIza") or len(api_key) != 39:
+            st.error("Invalid API Key format. Google Gemini keys start with 'AIza' and are 39 characters long.")
+        else:
+            st.session_state["user_api_key"] = api_key
+            st.rerun()
+
+# Determine active API Key (Secrets first, then User's Session)
+try:
+    active_api_key = st.secrets.get("GOOGLE_API_KEY") or st.session_state.get("user_api_key")
+except Exception:
+    active_api_key = st.session_state.get("user_api_key")
+
+if not active_api_key:
+    prompt_for_api_key()
+    st.stop()
+
 @st.cache_resource
-def load_models():
+def load_models(api_key):
     _llm = ChatGoogleGenerativeAI(
         model=LLM_MODEL, 
-        temperature=LLM_TEMP # Lower temperature for analytical/RAG tasks
+        temperature=LLM_TEMP,
+        google_api_key=api_key
     )
-    _embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL)
+    _embeddings = GoogleGenerativeAIEmbeddings(
+        model=EMBEDDING_MODEL,
+        google_api_key=api_key
+    )
     return _llm, _embeddings
 
-llm, embeddings = load_models()
+llm, embeddings = load_models(active_api_key)
 
 @st.cache_resource
-def load_vector_dbs():
+def load_vector_dbs(_embeddings_obj):
     v_db = Chroma(
         persist_directory=CHROMA_PATH,
-        embedding_function=embeddings
+        embedding_function=_embeddings_obj
     )
     c_db = Chroma(
         persist_directory=CACHE_PATH,
-        embedding_function=embeddings,
+        embedding_function=_embeddings_obj,
         collection_name="semantic_cache",
         collection_metadata={"hnsw:space": "cosine"}
     )
     return v_db, c_db
 
-vector_db, cache_db = load_vector_dbs()
+vector_db, cache_db = load_vector_dbs(embeddings)
 
 @st.cache_resource
 def load_reranker():
@@ -66,6 +93,11 @@ persona = st.sidebar.radio("🎭 Role", ["👤 Hunter", "🛠️ Engineer"], lab
 st.sidebar.divider()
 if st.sidebar.button("📖 Open Help Guide", use_container_width=True):
     st.switch_page("pages/1_Help_Guide.py")
+
+if "user_api_key" in st.session_state:
+    if st.sidebar.button("🚪 Log Out (Clear API Key)", use_container_width=True):
+        del st.session_state["user_api_key"]
+        st.rerun()
 st.sidebar.divider()
 
 if "👤 Hunter" in persona:
