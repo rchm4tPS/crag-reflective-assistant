@@ -21,8 +21,8 @@ A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Ge
 
 1. **Clone the repository:**
    ```bash
-   git clone <your-repo-url>
-   cd hacktiv8-RAG
+   git clone https://github.com/rchm4tPS/crag-reflective-assistant.git
+   cd crag-reflective-assistant
    ```
 
 2. **Install Dependencies:**
