@@ -12,7 +12,7 @@ __pycache__/
 *.so
 
 # Databases & Cache (DO NOT PUSH THESE)
-chroma_db/
+# chroma_db/
 cache_db/
 
 # Data (Keep your raw knowledge base private)
