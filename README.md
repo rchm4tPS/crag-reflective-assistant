@@ -19,7 +19,7 @@ A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Ge
 
 ## Limitation
 *   Maybe it will runs a bit longer than expected due to the usage of free tier Google LLM API, so please be patient while waiting the app to be fully initialized.
-*   **Pre-defined dataset taken from HotpotQA:** The available dataset in folder `/hotpot_test` serve for testing purposes of this RAG model, which consist of 10 small documents. You can ask the question from this folder's document immediately after you index whole documents first. Due to small dataset, the accuracy, similarity score, chunking method, embedding technique and parameter is really driving the RAG model.
+*   **Pre-defined dataset taken from HotpotQA:** The available dataset in folder `/hotpot_test` serve for testing purposes of this RAG model, which consist of 10 small documents. You can ask the question from this folder's document immediately because I have prefilled chroma_db with a very small amount of data to start immediately. Alternatively, if you do this locally, you can customize the chroma_db after you index whole documents first. Due to small dataset in default chroma_db I gave to you, the accuracy, similarity score, chunking method, embedding technique and parameter is really driving the RAG model, and may vary depending on document content and language.
 
 ## ⚙️ Installation & Setup
 
