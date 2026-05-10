@@ -19,4 +19,12 @@ TOP_K_RERANKING = 5
 
 ARCHITECTURE_DIAGRAM_URL = "https://res.cloudinary.com/dzhtnuyez/image/upload/architecture_h7tmv9.png" # You can replace this with your Cloudinary URL!
 
-os.environ["GOOGLE_API_KEY"] = "YOUR_API_KEY_HERE"
+import streamlit as st
+
+# Safely handle the API Key for both local and Streamlit Cloud deployment
+if "GOOGLE_API_KEY" in st.secrets:
+    # Deployed on Streamlit Cloud
+    os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+elif "GOOGLE_API_KEY" not in os.environ:
+    # Local fallback (Replace with your actual key locally, but DON'T push to GitHub!)
+    os.environ["GOOGLE_API_KEY"] = "YOUR_GOOGLE_API_KEY"
