@@ -2,8 +2,11 @@
 
 A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Generation) assistant. Built with a Corrective RAG (CRAG) architecture to eliminate hallucinations, fallback to Agentic Regex, and a robust "Veteran-Approved" caching system to ensure answers stay correct and trusted.
 
+> **⚠️ WARNING:** For the live deployed Streamlit app here: [My Deployed Streamlit](https://crag-reflective-assistant.streamlit.app/), you MUST provide your own Gemini API Key. [Read more about BYOK Security below](#byok-security).
+
 ## Architecture Image
 ![CRAG Architecture Pipeline](https://res.cloudinary.com/dzhtnuyez/image/upload/architecture_h7tmv9.png)
+
 ## 🚀 Features
 *   **Two-Tier Persona System:** 
     *   **Hunter Mode:** Ask questions, view AI reasoning traces, and nominate great answers for documentation.
@@ -11,7 +14,8 @@ A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Ge
 *   **Semantic Memory Cache:** Perfect answers are cached. Future queries with the exact same intent instantly return the Veteran-Approved answer without recalculating.
 *   **CRAG Pipeline:** Retrieves context, votes on confidence, reranks via Cross-Encoder, and grades relevance.
 *   **Multi-Fallback:** If vector retrieval fails, an AI agent writes a Regex pattern to search the raw filesystem. If that fails, it falls back to a DuckDuckGo Web Search.
-*   **Multi-turn:** As long as the page is not hard-reloaded, the chat can go on with multiturn capability, though the LLM functionality will degrade as longer query chat history is condensed in every turn for better memorization of LLM
+*   **Multi-turn:** As long as the page is not hard-reloaded, the chat can go on with multiturn capability, though the LLM functionality will degrade as longer query chat history is condensed in every turn for better memorization of LLM.
+*   <a id="byok-security"></a>**Bring-Your-Own-Key (BYOK) Security:** Fully multi-tenant safe. Users are prompted with a secure UI dialog to enter their own API key, which is strictly isolated to their browser session.
 
 ## Limitation
 *   Maybe it will runs a bit longer than expected due to the usage of free tier Google LLM API, so please be patient while waiting the app to be fully initialized.
@@ -30,15 +34,20 @@ A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Ge
    pip install -r requirements.txt
    ```
 
-3. **Configure Settings:**
-   Open `config.py` and add your **Google Gemini API Key**. You can also tweak model temperatures, thresholds, and file paths here.
+3. **Configure Settings (Optional):**
+   Open `config.py` to tweak model temperatures, similarity thresholds, and file paths. *(Note: API Keys are handled securely in the UI, do not put them in `config.py`!)*
 
 4. **Add Your Knowledge Base:**
    Place your raw text documents (Markdown, TXT, etc.) into the `./hotpot_test` folder (or whatever folder you defined in `config.py`).
 
-5. **Index the Files:**
-   Run the indexer to parse your files into the ChromaDB vector database.
+5. **Index the Files (Local Setup Only):**
+   To parse your files into the ChromaDB vector database, you must first set your API key in your terminal, then run the indexer:
    ```bash
+   # Windows
+   set GOOGLE_API_KEY=AIzaSy...
+   # Mac/Linux
+   export GOOGLE_API_KEY=AIzaSy...
+   
    python indexer.py
    ```
 
@@ -46,6 +55,7 @@ A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Ge
    ```bash
    streamlit run app.py
    ```
+   *Upon launching, the app will prompt you with a secure dialog box to enter your Gemini API Key.*
 
 ## 📁 Repository Structure
 *   `app.py` - The main Streamlit UI orchestrator.
