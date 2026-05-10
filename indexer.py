@@ -8,23 +8,21 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 
-# Import config to initialize the GOOGLE_API_KEY in os.environ
-import config
+# 1. Import all constants securely from config.py
+from config import *
 
-# ==========================================
-# GLOBAL CONSTANTS (MATCH WITH APP.PY)
-# ==========================================
-DATA_DIR = "./hotpot_test"       # Folder containing your domain knowledge documentation
-CHROMA_PATH = "./chroma_db"      # Persistent directory for primary vector store
-LLM_MODEL = "gemini-3.1-flash-lite"
-LLM_TEMP = 1.0
-EMBEDDING_MODEL = "gemini-embedding-2-preview"
+# 2. Check for API Key since it's no longer hardcoded in config.py!
+if "GOOGLE_API_KEY" not in os.environ:
+    print("❌ ERROR: GOOGLE_API_KEY is not set in your environment.")
+    print("Please run this command first before running the indexer:")
+    print("set GOOGLE_API_KEY=AIzaSy...")
+    exit(1)
 
-# 1. API Key is automatically set by importing config above.
-# 2. Initialize Google Gemini and Embedding Model
+# 3. Initialize Google Gemini and Embedding Model
+# LLM_TEMP is locally overridden for indexer since it does data generation (temp=1.0)
 llm = ChatGoogleGenerativeAI(
     model=LLM_MODEL, 
-    temperature=LLM_TEMP
+    temperature=1.0 
 )
 embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL)
 
