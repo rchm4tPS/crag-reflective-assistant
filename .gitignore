@@ -1,0 +1,26 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Databases & Cache (DO NOT PUSH THESE)
+chroma_db/
+cache_db/
+
+# Data (Keep your raw knowledge base private)
+# hotpot_test/
+*.csv
+*.json
+*.pdf
+
+# IDEs
+.vscode/
+.idea/

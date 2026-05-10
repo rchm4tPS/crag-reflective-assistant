@@ -1,0 +1,15 @@
+chromadb
+ddgs
+duckduckgo-search
+frozenlist
+langchain
+langchain-chroma
+langchain-classic
+langchain-community
+langchain-core
+langchain-google-genai
+langchain-text-splitters
+langsmith
+sentence-transformers
+streamlit
+torch
