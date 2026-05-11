@@ -2,7 +2,7 @@
 
 A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Generation) assistant. Built with a Corrective RAG (CRAG) architecture to eliminate hallucinations, fallback to Agentic Regex, and a robust "Veteran-Approved" caching system to ensure answers stay correct and trusted.
 
-> **⚠️ WARNING:** For the live deployed Streamlit app here: [My Deployed Streamlit](https://crag-reflective-assistant.streamlit.app/), you MUST provide your own Gemini API Key. [Read more about BYOK Security below](#byok-security).
+> **⚠️ WARNING:** For the live deployed Streamlit app here: [My Deployed Streamlit](https://crag-reflective-assistant-2.streamlit.app/), you MUST provide your own Gemini API Key. [Read more about BYOK Security below](#byok-security).
 
 ## Architecture Image
 ![V2 of proposed CRAG Architecture Pipeline](https://res.cloudinary.com/dzhtnuyez/image/upload/w_5000,c_limit,q_auto,f_png/Light_-_RAG_for_Data_Scientist_Flow_Diagram_k2rcu1.png)
