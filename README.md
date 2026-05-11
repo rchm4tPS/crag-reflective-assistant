@@ -18,10 +18,10 @@ A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Ge
 *   <a id="byok-security"></a>**Bring-Your-Own-Key (BYOK) Security:** Fully multi-tenant safe. Users are prompted with a secure UI dialog to enter their own API key, which is strictly isolated to their browser session.
 
 ## Limitation
-*   Maybe it will runs a bit longer than expected due to the usage of free tier Google LLM API, so please be patient while waiting the app to be fully initialized.
+*   **Time constraints:** Maybe it will runs a bit longer than expected due to the usage of free tier Google LLM API, so please be patient while waiting the app to be fully initialized.
 *   **No consideration for ETL:** Data for this RAG pipeline must be assumed to already be cleaned previously from any formatting or layout issue. The best file to be indexed is in .txt, .md, or something similar.
-*   **Pre-defined dataset taken from HotpotQA:** The available dataset in folder `/hotpot_test` serve for testing purposes of this RAG model, which consist of 10 small documents. You can ask the question from this folder's document immediately after you index whole documents first. Due to small dataset, the accuracy, similarity score, chunking method, embedding technique and parameter is really driving the RAG model.
 *   **No history retained for different session:** Unlike typical chatbot that will store past conversations, in this MVP version of CRAG, hunter will not retain their past conversations and is considered to use the chatbot interface as long as there is no hard reload on the page. Though the cached veteran-approved answer is persistently saved in cache_db even when user do hard reloading (thus making it new session), so when hunter asking same intent question that is found in cache_db, it will get the result from cache, not from the whole pipeline RAG.
+*   **Pre-defined dataset taken from HotpotQA:** The available dataset in folder `/hotpot_test` serve for testing purposes of this RAG model, which consist of 10 small documents. You can ask the question from this folder's document immediately because I have prefilled chroma_db with a very small amount of data to start immediately. Alternatively, if you do this locally, you can customize the chroma_db after you index whole documents first. Due to small dataset in default chroma_db I gave to you, the accuracy, similarity score, chunking method, embedding technique and parameter is really driving the RAG model, and may vary depending on document content and language.
 
 ## ⚙️ Installation & Setup
 
