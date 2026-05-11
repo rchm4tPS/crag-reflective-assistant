@@ -5,7 +5,7 @@ A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Ge
 > **⚠️ WARNING:** For the live deployed Streamlit app here: [My Deployed Streamlit](https://crag-reflective-assistant.streamlit.app/), you MUST provide your own Gemini API Key. [Read more about BYOK Security below](#byok-security).
 
 ## Architecture Image
-![V2 of proposed CRAG Architecture Pipeline](https://res.cloudinary.com/dzhtnuyez/image/upload/Light_-_RAG_for_Data_Scientist_Flow_Diagram_k2rcu1.png)
+![V2 of proposed CRAG Architecture Pipeline](https://res.cloudinary.com/dzhtnuyez/image/upload/q_auto,f_auto/Light_-_RAG_for_Data_Scientist_Flow_Diagram_k2rcu1.png)
 
 ## 🚀 Features
 *   **Two-Tier Persona System:** 
