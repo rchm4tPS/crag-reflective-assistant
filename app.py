@@ -32,8 +32,19 @@ def prompt_for_api_key():
         elif not api_key.startswith("AIza") or len(api_key) != 39:
             st.error("Invalid API Key format. Google Gemini keys start with 'AIza' and are 39 characters long.")
         else:
-            st.session_state["user_api_key"] = api_key
-            st.rerun()
+            # Validate the API Key by doing small test call to Gemini API
+            with st.spinner("Validating your API Key . . ."):
+                try:
+                    test_llm = ChatGoogleGenerativeAI(
+                        model=LLM_MODEL,
+                        api_key=api_key
+                    )
+                    test_llm.invoke("Hi")
+
+                    st.session_state["user_api_key"] = api_key
+                    st.rerun()
+                except Exception:
+                    st.error("❌ Authentication failed: the provided API key is invalid, revoked, or lacks permission!")
 
 # Determine active API Key (Secrets first, then User's Session)
 try:
@@ -177,107 +188,113 @@ if "👤 Hunter" in persona:
             status_data = {"label": "Working...", "steps": []}
             msg_meta = {"role": "assistant"}
             
-            with st.status("Analyzing query...", expanded=True) as status_box:
-                # Step A: Context-aware Condensation
-                status_box.update(label="Summarizing intent...")
-                condensed_query = condense_history(st.session_state.messages[:-1], query, llm)
+            try:
+                with st.status("Analyzing query...", expanded=True) as status_box:
+                    # Step A: Context-aware Condensation
+                    status_box.update(label="Summarizing intent...")
+                    condensed_query = condense_history(st.session_state.messages[:-1], query, llm)
 
-                if "OFF_TOPIC" in condensed_query.upper():
-                    class_str = "OFF_TOPIC"
-                else:
-                    class_str = "TECHNICAL"
-
-                if "SELF_QUERY" in condensed_query.upper():
-                    status_box.update(label="🔍 Inspecting Internal Manifest...", state="complete")
-                    status_data["label"] = "🔍 Inspecting Internal Manifest..."
-                    manifest = get_indexed_metadata_summary(vector_db)
-                    path = "SELF_QUERY"
-
-                elif "OFF_TOPIC" in condensed_query.upper():
-                    status_box.update(label="💬 Conversing...", state="complete")
-                    path = "OFF_TOPIC"
-
-                else:
-                    # PATH 1: Semantic Cache (Fast Path)
-                    status_box.update(label=f"🔍 Searching Cache for: `{query}`...")
-                    msg_meta["caption"] = f"🔍 Searching for: `{query}`"
-                    cached_answer, status = check_semantic_cache(query, cache_db, llm)
-                        
-                    if cached_answer:
-                        status_box.update(label="✅ Found in Cache!", state="complete")
-                        path = "CACHE"
+                    if "OFF_TOPIC" in condensed_query.upper():
+                        class_str = "OFF_TOPIC"
                     else:
-                        # PATH 2: Full RAG Pipeline (Slow Path)
-                        status_box.update(label="🔍 Expanding query variations...")
-                        st.write("Expanding query variations...")
-                        status_data["steps"].append("Expanding query variations...")
-                        
-                        sub_queries = expand_query(condensed_query, llm)
-                        
-                        status_box.update(label="⚖️ Retrieving and Voting...")
-                        st.write("Retrieving and Voting...")
-                        status_data["steps"].append("Retrieving and Voting...")
-                        chunks, is_confident, vote_count = retrieve_and_filter(sub_queries, vector_db, status_data=status_data)
-                            
-                        st.metric("Sub-query Confidence Votes", f"{vote_count} / 3")
-                        status_data["steps"].append(f"Sub-query Confidence Votes: {vote_count} / 3")
+                        class_str = "TECHNICAL"
 
-                        final_context = []
-                        cache_status = "auto-verified"
-                        is_rag_success = False
-                        
-                        if is_confident:
-                            status_box.update(label="🔍 Confidence threshold met. Reranking...")
-                            st.write("🔍 Confidence threshold met. Reranking...")
-                            status_data["steps"].append("Confidence threshold met. Reranking...")
-                            temp_context = rerank_chunks(condensed_query, chunks, reranker, status_steps=status_data["steps"])
-                            
-                            # CRITICAL: The Strict Evaluator Gate (CRAG Step)
-                            if grade_context_relevance(condensed_query, temp_context, active_api_key, status_steps=status_data["steps"]):
-                                final_context = temp_context
-                                status_box.update(label="✅ Found relevant Documentation", state="complete")
-                                status_data["label"] = "✅ Found relevant Documentation"
-                                path = "RAG"
-                                is_rag_success = True
-                            else:
-                                st.write("❌ Primary Context deemed irrelevant by Grader. Falling back to Domain Knowledge Search...")
-                                status_data["steps"].append("❌ Primary Context deemed irrelevant by Grader. Falling back to Domain Knowledge Search...")
+                    if "SELF_QUERY" in condensed_query.upper():
+                        status_box.update(label="🔍 Inspecting Internal Manifest...", state="complete")
+                        status_data["label"] = "🔍 Inspecting Internal Manifest..."
+                        manifest = get_indexed_metadata_summary(vector_db)
+                        path = "SELF_QUERY"
 
-                        # Corrective Fallback: Trigger if not confident OR if primary context was rejected
-                        if not is_rag_success:
-                            if not is_confident:
-                                status_box.update(label="❌ Low confidence. Triggering Agentic Search via Regex...")
-                                st.write("❌ Low confidence (< 2 votes). Triggering Agentic Search via Regex.")
-                                status_data["steps"].append("❌ Low confidence (< 2 votes). Triggering Agentic Search via Regex.")
+                    elif "OFF_TOPIC" in condensed_query.upper():
+                        status_box.update(label="💬 Conversing...", state="complete")
+                        path = "OFF_TOPIC"
+
+                    else:
+                        # PATH 1: Semantic Cache (Fast Path)
+                        status_box.update(label=f"🔍 Searching Cache for: `{query}`...")
+                        msg_meta["caption"] = f"🔍 Searching for: `{query}`"
+                        cached_answer, status = check_semantic_cache(query, cache_db, llm)
+                            
+                        if cached_answer:
+                            status_box.update(label="✅ Found in Cache!", state="complete")
+                            path = "CACHE"
+                        else:
+                            # PATH 2: Full RAG Pipeline (Slow Path)
+                            status_box.update(label="🔍 Expanding query variations...")
+                            st.write("Expanding query variations...")
+                            status_data["steps"].append("Expanding query variations...")
+                            
+                            sub_queries = expand_query(condensed_query, llm)
+                            
+                            status_box.update(label="⚖️ Retrieving and Voting...")
+                            st.write("Retrieving and Voting...")
+                            status_data["steps"].append("Retrieving and Voting...")
+                            chunks, is_confident, vote_count = retrieve_and_filter(sub_queries, vector_db, status_data=status_data)
                                 
-                            status_box.update(label="🕵️ Agentic Regex Search...")
-                            regex_chunks = agentic_regex_search(condensed_query, llm, status_steps=status_data["steps"])
+                            st.metric("Sub-query Confidence Votes", f"{vote_count} / 3")
+                            status_data["steps"].append(f"Sub-query Confidence Votes: {vote_count} / 3")
+
+                            final_context = []
+                            cache_status = "auto-verified"
+                            is_rag_success = False
+                            
+                            if is_confident:
+                                status_box.update(label="🔍 Confidence threshold met. Reranking...")
+                                st.write("🔍 Confidence threshold met. Reranking...")
+                                status_data["steps"].append("Confidence threshold met. Reranking...")
+                                temp_context = rerank_chunks(condensed_query, chunks, reranker, status_steps=status_data["steps"])
                                 
-                            if regex_chunks and grade_context_relevance(condensed_query, regex_chunks, active_api_key, status_steps=status_data["steps"]):
-                                final_context = regex_chunks
-                                cache_status = "unverified"
-                                status_box.update(label="⚠️ Found in knowledge base", state="complete")
-                                status_data["label"] = "⚠️ Found in knowledge base"
-                                path = "RAG"
-                                is_rag_success = True
-                            else:
-                                st.write("Searching Web...")
-                                status_data["steps"].append("Searching Web...")
-                                
-                                # Do the web search here inside the status box!
-                                try:
-                                    web_results = DDGS().text(condensed_query, max_results=3)
-                                    web_context = "\n\n".join([
-                                        f"--- Source: {res['title']} ({res['href']}) ---\nSnippet: {res['body']}" 
-                                        for res in web_results
-                                    ])
-                                except Exception as e:
-                                    # Fallback gracefully if web search gets rate-limitation
-                                    web_context = f"Web search temporarily unavailable due to error: {e}"
-                                
-                                status_box.update(label="🌐 Context not found. Searching Web instead", state="complete")
-                                status_data["label"] = "🌐 Context not found. Searching Web instead"
-                                path = "WEB"
+                                # CRITICAL: The Strict Evaluator Gate (CRAG Step)
+                                if grade_context_relevance(condensed_query, temp_context, active_api_key, status_steps=status_data["steps"]):
+                                    final_context = temp_context
+                                    status_box.update(label="✅ Found relevant Documentation", state="complete")
+                                    status_data["label"] = "✅ Found relevant Documentation"
+                                    path = "RAG"
+                                    is_rag_success = True
+                                else:
+                                    st.write("❌ Primary Context deemed irrelevant by Grader. Falling back to Domain Knowledge Search...")
+                                    status_data["steps"].append("❌ Primary Context deemed irrelevant by Grader. Falling back to Domain Knowledge Search...")
+
+                            # Corrective Fallback: Trigger if not confident OR if primary context was rejected
+                            if not is_rag_success:
+                                if not is_confident:
+                                    status_box.update(label="❌ Low confidence. Triggering Agentic Search via Regex...")
+                                    st.write("❌ Low confidence (< 2 votes). Triggering Agentic Search via Regex.")
+                                    status_data["steps"].append("❌ Low confidence (< 2 votes). Triggering Agentic Search via Regex.")
+                                    
+                                status_box.update(label="🕵️ Agentic Regex Search...")
+                                regex_chunks = agentic_regex_search(condensed_query, llm, status_steps=status_data["steps"])
+                                    
+                                if regex_chunks and grade_context_relevance(condensed_query, regex_chunks, active_api_key, status_steps=status_data["steps"]):
+                                    final_context = regex_chunks
+                                    cache_status = "unverified"
+                                    status_box.update(label="⚠️ Found in knowledge base", state="complete")
+                                    status_data["label"] = "⚠️ Found in knowledge base"
+                                    path = "RAG"
+                                    is_rag_success = True
+                                else:
+                                    st.write("Searching Web...")
+                                    status_data["steps"].append("Searching Web...")
+                                    
+                                    # Do the web search here inside the status box!
+                                    try:
+                                        web_results = DDGS().text(condensed_query, max_results=3)
+                                        web_context = "\n\n".join([
+                                            f"--- Source: {res['title']} ({res['href']}) ---\nSnippet: {res['body']}" 
+                                            for res in web_results
+                                        ])
+                                    except Exception as e:
+                                        # Fallback gracefully if web search gets rate-limitation
+                                        web_context = f"Web search temporarily unavailable due to error: {e}"
+                                    
+                                    status_box.update(label="🌐 Context not found. Searching Web instead", state="complete")
+                                    status_data["label"] = "🌐 Context not found. Searching Web instead"
+                                    path = "WEB"
+
+            except Exception as e:
+                st.error("❌ **AI Generation Error:** The connection to Gemini failed. You may have run out of API quota, or the key was revoked!")
+                with st.expander("Show technical details:"):
+                    st.error(str(e))
 
             # --- OUTSIDE STATUS BOX: FINAL GENERATION STREAMING ---
             if path == "SELF_QUERY":
