@@ -5,21 +5,23 @@ A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Ge
 > **⚠️ WARNING:** For the live deployed Streamlit app here: [My Deployed Streamlit](https://crag-reflective-assistant.streamlit.app/), you MUST provide your own Gemini API Key. [Read more about BYOK Security below](#byok-security).
 
 ## Architecture Image
-![CRAG Architecture Pipeline](https://res.cloudinary.com/dzhtnuyez/image/upload/architecture_h7tmv9.png)
+![V2 of proposed CRAG Architecture Pipeline](https://res.cloudinary.com/dzhtnuyez/image/upload/Light_-_RAG_for_Data_Scientist_Flow_Diagram_k2rcu1.png)
 
 ## 🚀 Features
 *   **Two-Tier Persona System:** 
     *   **Hunter Mode:** Ask questions, view AI reasoning traces, and nominate great answers for documentation.
     *   **Engineer Mode:** A dashboard for domain experts to review, patch, and "Official-ize" nominated answers.
-*   **Semantic Memory Cache:** Perfect answers are cached. Future queries with the exact same intent instantly return the Veteran-Approved answer without recalculating.
-*   **CRAG Pipeline:** Retrieves context, votes on confidence, reranks via Cross-Encoder, and grades relevance.
-*   **Multi-Fallback:** If vector retrieval fails, an AI agent writes a Regex pattern to search the raw filesystem. If that fails, it falls back to a DuckDuckGo Web Search.
+*   **Semantic Memory Cache:** Approved nominated answers are cached. Future queries with the exact same intent instantly return the Veteran-Approved answer without recalculating or doing whole RAG pipeline again, thus cut the cost for recurring domain-related query.
+*   **CRAG Pipeline:** Retrieves context, votes on confidence (must be "voted" by system to be at least 2 out of 3), reranks via Cross-Encoder, and grades relevance. All of these features has made the RAG more resilient from doing unpredicted hallucinations.
+*   **Multi-Fallback:** If vector retrieval fails, an AI agent writes a Regex pattern to search the raw filesystem. If that still fails, it eventually falls back to a DuckDuckGo Web Search.
 *   **Multi-turn:** As long as the page is not hard-reloaded, the chat can go on with multiturn capability, though the LLM functionality will degrade as longer query chat history is condensed in every turn for better memorization of LLM.
 *   <a id="byok-security"></a>**Bring-Your-Own-Key (BYOK) Security:** Fully multi-tenant safe. Users are prompted with a secure UI dialog to enter their own API key, which is strictly isolated to their browser session.
 
 ## Limitation
 *   Maybe it will runs a bit longer than expected due to the usage of free tier Google LLM API, so please be patient while waiting the app to be fully initialized.
+*   **No consideration for ETL:** Data for this RAG pipeline must be assumed to already be cleaned previously from any formatting or layout issue. The best file to be indexed is in .txt, .md, or something similar.
 *   **Pre-defined dataset taken from HotpotQA:** The available dataset in folder `/hotpot_test` serve for testing purposes of this RAG model, which consist of 10 small documents. You can ask the question from this folder's document immediately after you index whole documents first. Due to small dataset, the accuracy, similarity score, chunking method, embedding technique and parameter is really driving the RAG model.
+*   **No history retained for different session:** Unlike typical chatbot that will store past conversations, in this MVP version of CRAG, hunter will not retain their past conversations and is considered to use the chatbot interface as long as there is no hard reload on the page. Though the cached veteran-approved answer is persistently saved in cache_db even when user do hard reloading (thus making it new session), so when hunter asking same intent question that is found in cache_db, it will get the result from cache, not from the whole pipeline RAG.
 
 ## ⚙️ Installation & Setup
 
@@ -70,3 +72,6 @@ A (probably, still argued) accurate, domain-agnostic RAG (Retrieval-Augmented Ge
 *   **Vector Database:** ChromaDB
 *   **Reranker:** Sentence-Transformers (Cross-Encoder)
 *   **Orchestration:** LangChain Core
+
+Created by Rachmat Purwa Saputra<br>
+in 2026.
