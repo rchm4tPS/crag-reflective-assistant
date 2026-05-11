@@ -61,20 +61,25 @@ def load_models(api_key):
 llm, embeddings = load_models(active_api_key)
 
 @st.cache_resource
-def load_vector_dbs(_embeddings_obj):
+def load_vector_dbs(api_key):
+    # Initialize fresh embeddings mapped to this specific user's API key
+    _embeddings_local = GoogleGenerativeAIEmbeddings(
+        model=EMBEDDING_MODEL,
+        api_key=api_key
+    )
     v_db = Chroma(
         persist_directory=CHROMA_PATH,
-        embedding_function=_embeddings_obj
+        embedding_function=_embeddings_local
     )
     c_db = Chroma(
         persist_directory=CACHE_PATH,
-        embedding_function=_embeddings_obj,
+        embedding_function=_embeddings_local,
         collection_name="semantic_cache",
         collection_metadata={"hnsw:space": "cosine"}
     )
     return v_db, c_db
 
-vector_db, cache_db = load_vector_dbs(embeddings)
+vector_db, cache_db = load_vector_dbs(active_api_key)
 
 @st.cache_resource
 def load_reranker():
@@ -260,11 +265,15 @@ if "👤 Hunter" in persona:
                                 status_data["steps"].append("Searching Web...")
                                 
                                 # Do the web search here inside the status box!
-                                web_results = DDGS().text(condensed_query, max_results=3)
-                                web_context = "\n\n".join([
-                                    f"--- Source: {res['title']} ({res['href']}) ---\nSnippet: {res['body']}" 
-                                    for res in web_results
-                                ])
+                                try:
+                                    web_results = DDGS().text(condensed_query, max_results=3)
+                                    web_context = "\n\n".join([
+                                        f"--- Source: {res['title']} ({res['href']}) ---\nSnippet: {res['body']}" 
+                                        for res in web_results
+                                    ])
+                                except Exception as e:
+                                    # Fallback gracefully if web search gets rate-limitation
+                                    web_context = f"Web search temporarily unavailable due to error: {e}"
                                 
                                 status_box.update(label="🌐 Context not found. Searching Web instead", state="complete")
                                 status_data["label"] = "🌐 Context not found. Searching Web instead"
