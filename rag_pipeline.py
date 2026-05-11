@@ -108,7 +108,7 @@ def condense_history(chat_history, latest_query, llm):
     RULES:
     - If intent is OFF_TOPIC, return exactly: OFF_TOPIC
     - If intent is SELF_QUERY, return exactly: SELF_QUERY
-    - Otherwise, rephrase the 'Follow-up' into a STANDALONE technical search query. 
+    - Otherwise, rephrase the 'Follow-up' into a STANDALONE domain search query. 
     - CRITICAL: Only inherit specific terminology or document names from chat history if they are directly relevant to the NEW follow-up question.
     - ANOTHER CRITICAL: Do not force context if the user is changing the subject to a new terminology or context or domain knowledge.
     
@@ -216,7 +216,7 @@ def rerank_chunks(original_query, deduplicated_chunks, reranker, top_k=TOP_K_RER
             
     return final_docs
 
-def generate_and_cache(query, context_chunks, llm, cache_status="auto-verified"):
+def generate_answer(query, context_chunks, llm):
     """
     Combines chunks into a prompt, streams the LLM response.
     """
@@ -330,7 +330,7 @@ def agentic_regex_search(query, llm, search_dir=DATA_DIR, status_steps=None):
         
     return matches[:3] 
 
-def grade_context_relevance(query, chunks, status_steps=None):
+def grade_context_relevance(query, chunks, api_key, status_steps=None):
     """
     Corrective RAG (CRAG) mechanism.
     Evaluates if the retrieved chunks actually answer the user's query.
@@ -355,7 +355,7 @@ def grade_context_relevance(query, chunks, status_steps=None):
     SINGLE-WORD RESPONSE:
     """)
     
-    eval_llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.0)
+    eval_llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.0, api_key=api_key)
     response = eval_llm.invoke(prompt.format(query=query, context=context_text))
 
     if isinstance(response.content, list):
