@@ -194,11 +194,6 @@ if "👤 Hunter" in persona:
                     status_box.update(label="Summarizing intent...")
                     condensed_query = condense_history(st.session_state.messages[:-1], query, llm)
 
-                    if "OFF_TOPIC" in condensed_query.upper():
-                        class_str = "OFF_TOPIC"
-                    else:
-                        class_str = "TECHNICAL"
-
                     if "SELF_QUERY" in condensed_query.upper():
                         status_box.update(label="🔍 Inspecting Internal Manifest...", state="complete")
                         status_data["label"] = "🔍 Inspecting Internal Manifest..."
@@ -235,6 +230,7 @@ if "👤 Hunter" in persona:
                             status_data["steps"].append(f"Sub-query Confidence Votes: {vote_count} / 3")
 
                             final_context = []
+                            # Initial status for semantic RAG. If we fall back to Regex, this will be downgraded.
                             cache_status = "auto-verified"
                             is_rag_success = False
                             
@@ -267,6 +263,7 @@ if "👤 Hunter" in persona:
                                     
                                 if regex_chunks and grade_context_relevance(condensed_query, regex_chunks, active_api_key, status_steps=status_data["steps"]):
                                     final_context = regex_chunks
+                                    # Flag as unverified because Regex is a broad 'safety net' search, not a precise semantic match.
                                     cache_status = "unverified"
                                     status_box.update(label="⚠️ Found in knowledge base", state="complete")
                                     status_data["label"] = "⚠️ Found in knowledge base"
@@ -354,7 +351,7 @@ if "👤 Hunter" in persona:
                 msg_meta["status"] = cache_status
                 msg_meta["can_promote"] = True
                 
-                full_response = generate_and_cache(condensed_query, final_context, llm, cache_status=cache_status)
+                full_response = generate_answer(condensed_query, final_context, llm)
                 msg_meta["content"] = "### 🤖 AI Response:\n" + full_response
                 st.session_state.messages.append(msg_meta)
                 st.rerun()

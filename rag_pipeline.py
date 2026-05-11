@@ -108,7 +108,7 @@ def condense_history(chat_history, latest_query, llm):
     RULES:
     - If intent is OFF_TOPIC, return exactly: OFF_TOPIC
     - If intent is SELF_QUERY, return exactly: SELF_QUERY
-    - Otherwise, rephrase the 'Follow-up' into a STANDALONE technical search query. 
+    - Otherwise, rephrase the 'Follow-up' into a STANDALONE domain search query. 
     - CRITICAL: Only inherit specific terminology or document names from chat history if they are directly relevant to the NEW follow-up question.
     - ANOTHER CRITICAL: Do not force context if the user is changing the subject to a new terminology or context or domain knowledge.
     
@@ -216,7 +216,7 @@ def rerank_chunks(original_query, deduplicated_chunks, reranker, top_k=TOP_K_RER
             
     return final_docs
 
-def generate_and_cache(query, context_chunks, llm, cache_status="auto-verified"):
+def generate_answer(query, context_chunks, llm):
     """
     Combines chunks into a prompt, streams the LLM response.
     """
