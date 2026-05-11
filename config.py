@@ -15,4 +15,4 @@ MAX_SCORE_CONFIDENCE_THRESHOLD = 0.7
 CHUNK_SIM_SCORE_THRESHOLD = 0.7
 TOP_K_RERANKING = 5
 
-ARCHITECTURE_DIAGRAM_URL = "https://res.cloudinary.com/dzhtnuyez/image/upload/architecture_h7tmv9.png" # You can replace this with your Cloudinary URL!
+ARCHITECTURE_DIAGRAM_URL = "https://res.cloudinary.com/dzhtnuyez/image/upload/q_auto/f_auto/v1778493919/Light_-_RAG_for_Data_Scientist_Flow_Diagram_k2rcu1.png" # You can replace this with your Cloudinary URL!
